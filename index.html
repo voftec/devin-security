@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Devin Security Swarm — Guía visual en español</title>
+<style>
+  :root{
+    --bg:#0b0d10; --panel:#151a21; --panel-2:#1a212b;
+    --line:#232b36; --line-2:#2e3947;
+    --txt:#e8edf3; --txt-2:#a9b4c0; --txt-3:#7d8a99;
+    --acc:#5b8cff; --acc-2:#7aa4ff; --acc-soft:rgba(91,140,255,.12);
+    --ok:#3ecf8e; --warn:#f5a524; --bad:#f2555a; --crit:#ff6ad5;
+    --mono:"JetBrains Mono","Cascadia Code",Consolas,monospace;
+    --sans:"Inter",-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--sans);line-height:1.65;font-size:16px}
+  a{color:var(--acc-2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:var(--mono);font-size:.88em;background:#0e141c;border:1px solid var(--line);border-radius:5px;padding:.1em .4em;color:#9fd0ff}
+  .wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+
+  header.top{position:sticky;top:0;z-index:60;background:rgba(11,13,16,.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  header.top .wrap{display:flex;align-items:center;gap:14px;height:56px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700}
+  .logo .dot{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#5b8cff,#9b5bff);display:grid;place-items:center;font-size:12px;font-weight:800;color:#fff}
+  .topnav{margin-left:auto;display:flex;gap:18px;font-size:.88rem}
+  .topnav a{color:var(--txt-2)}
+  .topnav a:hover{color:var(--txt);text-decoration:none}
+
+  /* ===== hero ===== */
+  .hero{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center;padding:56px 0 26px}
+  .eyebrow{color:var(--acc-2);text-transform:uppercase;letter-spacing:.18em;font-size:.76rem;font-weight:700}
+  .hero h1{font-size:clamp(1.9rem,4vw,2.8rem);line-height:1.12;margin:.4em 0 .35em;letter-spacing:-.02em}
+  .hero p.sub{color:var(--txt-2);font-size:1.02rem;max-width:560px}
+  .hero img{width:100%;border-radius:16px;border:1px solid var(--line-2);display:block}
+  @media(max-width:860px){.hero{grid-template-columns:1fr}}
+  .credit{font-size:.74rem;color:var(--txt-3);margin:6px 2px 0}
+  .credit a{color:var(--txt-3);text-decoration:underline}
+
+  /* ===== pipeline diagram ===== */
+  .flow{display:flex;align-items:stretch;gap:0;margin:30px 0 8px;flex-wrap:wrap}
+  .fnode{flex:1;min-width:120px;background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--acc);border-radius:12px;padding:13px 12px;text-align:center}
+  .fnode .n{display:inline-block;font-family:var(--mono);font-size:.68rem;font-weight:700;color:var(--acc-2);letter-spacing:.1em;margin-bottom:4px}
+  .fnode b{display:block;font-size:.86rem;color:var(--txt)}
+  .fnode span.d{display:block;font-size:.73rem;color:var(--txt-3);margin-top:3px;line-height:1.4}
+  .farrow{align-self:center;padding:0 8px;color:var(--acc-2);font-size:1.25rem;font-weight:700}
+  @media(max-width:860px){.flow{flex-direction:column}.farrow{transform:rotate(90deg);padding:4px 0}}
+  .flow-note{text-align:center;color:var(--txt-3);font-size:.85rem;margin:4px 0 0}
+
+  /* ===== surface selector cards ===== */
+  .pick{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:26px 0 6px}
+  .pick button{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 18px;cursor:pointer;text-align:left;color:var(--txt);font-family:var(--sans);transition:.15s}
+  .pick button:hover{border-color:var(--acc);transform:translateY(-2px)}
+  .pick button.on{border-color:var(--acc);background:var(--acc-soft)}
+  .pick .k{font-family:var(--mono);font-size:.7rem;font-weight:700;color:var(--acc-2);letter-spacing:.12em}
+  .pick b{display:block;margin:7px 0 4px;font-size:1.02rem}
+  .pick span{font-size:.83rem;color:var(--txt-2);display:block}
+  .pick .arr{display:block;margin-top:9px;color:var(--acc-2);font-size:.8rem;font-weight:600}
+  @media(max-width:860px){.pick{grid-template-columns:1fr}}
+
+  /* ===== requisitos ===== */
+  .reqs{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0 8px}
+  .req{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 15px;font-size:.83rem;color:var(--txt-2)}
+  .req b{display:block;color:var(--txt);font-size:.88rem;margin-bottom:3px}
+  .req .rn{color:var(--acc-2);font-family:var(--mono);font-weight:700;margin-right:4px}
+  @media(max-width:860px){.reqs{grid-template-columns:1fr 1fr}}
+
+  /* ===== tabs ===== */
+  .tabbar{position:sticky;top:56px;z-index:50;display:flex;background:var(--bg);padding:14px 0 0;border-bottom:1px solid var(--line)}
+  .tabbtn{flex:1;background:none;border:none;border-bottom:3px solid transparent;color:var(--txt-3);font-family:var(--sans);font-size:.95rem;font-weight:600;padding:12px 8px;cursor:pointer}
+  .tabbtn:hover{color:var(--txt)}
+  .tabbtn.active{color:var(--txt);border-bottom-color:var(--acc)}
+  .tabpanel{display:none;padding:30px 0 16px}
+  .tabpanel.active{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .panel-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .panel-head h2{font-size:1.6rem;margin:0}
+  .tag{display:inline-block;font-size:.7rem;font-weight:700;padding:3px 11px;border-radius:999px;background:var(--acc-soft);color:var(--acc-2);border:1px solid rgba(91,140,255,.4)}
+  .tag.green{background:rgba(62,207,142,.12);color:#7fe3b4;border-color:rgba(62,207,142,.4)}
+  .tag.orange{background:rgba(245,165,36,.12);color:#ffc978;border-color:rgba(245,165,36,.4)}
+  .panel-sub{color:var(--txt-2);max-width:760px;margin:8px 0 0;font-size:.96rem}
+
+  figure{margin:20px 0}
+  figure img,figure video{width:100%;display:block;border-radius:14px;border:1px solid var(--line-2);background:#000}
+  figcaption{font-size:.83rem;color:var(--txt-2);padding:9px 4px 0;line-height:1.55}
+  figcaption b{color:var(--txt)}
+
+  /* annotated screenshots */
+  .annotated{position:relative}
+  .pin{position:absolute;width:30px;height:30px;border-radius:50%;background:var(--acc);color:#fff;display:grid;place-items:center;font-weight:800;font-family:var(--mono);font-size:.9rem;box-shadow:0 0 0 4px rgba(91,140,255,.3),0 4px 14px rgba(0,0,0,.5);transform:translate(-50%,-50%);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(91,140,255,.3)}50%{box-shadow:0 0 0 9px rgba(91,140,255,.12)}}
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}
+  .legend span{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 13px;font-size:.83rem;color:var(--txt-2)}
+  .legend b{color:var(--acc-2);font-family:var(--mono);margin-right:5px}
+
+  /* steps — numbered */
+  .steps{counter-reset:step;margin:18px 0}
+  .step{position:relative;padding:15px 18px 15px 62px;background:var(--panel);border:1px solid var(--line);border-radius:12px;margin:10px 0;counter-increment:step}
+  .step::before{content:counter(step,decimal-leading-zero);position:absolute;left:16px;top:15px;width:30px;height:30px;border-radius:9px;background:var(--acc-soft);border:1px solid rgba(91,140,255,.35);color:var(--acc-2);display:grid;place-items:center;font-family:var(--mono);font-weight:700;font-size:.78rem}
+  .step h4{margin:0 0 3px;font-size:.98rem;color:var(--txt)}
+  .step p{margin:3px 0;color:var(--txt-2);font-size:.92rem}
+  .step ul{margin:5px 0;padding-left:18px}
+  .step li{color:var(--txt-2);font-size:.9rem;margin:3px 0}
+
+  pre{background:#0a0f16;border:1px solid var(--line);border-radius:10px;padding:13px 15px;overflow:auto;font-family:var(--mono);font-size:.83rem;line-height:1.6;color:#c9d7e8;margin:8px 0}
+  .cmt{color:#5c6b7d}
+
+  /* fake terminal */
+  .term{background:#0a0f16;border:1px solid var(--line-2);border-radius:14px;overflow:hidden;margin:20px 0}
+  .term-bar{display:flex;gap:7px;padding:11px 14px;background:var(--panel-2);border-bottom:1px solid var(--line)}
+  .term-bar i{width:11px;height:11px;border-radius:50%;display:block}
+  .term-bar i:nth-child(1){background:#f2555a}.term-bar i:nth-child(2){background:#f5a524}.term-bar i:nth-child(3){background:#3ecf8e}
+  .term-bar span{margin-left:auto;font-size:.75rem;color:var(--txt-3);font-family:var(--mono)}
+  .term pre{border:none;margin:0;border-radius:0;background:transparent}
+  .term .p{color:#3ecf8e}
+  .term .c{color:#9fd0ff}
+
+  .note{border-left:3px solid var(--acc);background:var(--acc-soft);padding:11px 15px;border-radius:0 10px 10px 0;margin:14px 0;color:var(--txt-2);font-size:.9rem}
+  .note.warn{border-color:var(--warn);background:rgba(245,165,36,.09)}
+  .note.danger{border-color:var(--bad);background:rgba(242,85,90,.09)}
+  .note b{color:var(--txt)}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:860px){.grid2{grid-template-columns:1fr}}
+
+  /* mock finding card */
+  .finding{background:var(--panel);border:1px solid var(--line-2);border-radius:14px;overflow:hidden;margin:20px 0;max-width:660px}
+  .finding .fhead{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .sev{font-size:.7rem;font-weight:800;padding:3px 10px;border-radius:999px;letter-spacing:.05em}
+  .sev.high{background:rgba(242,85,90,.16);color:#ff8f93;border:1px solid rgba(242,85,90,.45)}
+  .fhead .fname{font-weight:700;font-size:.95rem}
+  .fhead .conf{margin-left:auto;font-size:.75rem;color:var(--ok);font-family:var(--mono)}
+  .finding .fbody{padding:13px 16px;font-size:.87rem;color:var(--txt-2)}
+  .finding .fbody code{display:block;margin:6px 0}
+  .factions{display:flex;gap:8px;padding:11px 16px;border-top:1px solid var(--line);flex-wrap:wrap}
+  .fbtn{font-size:.78rem;font-weight:600;padding:6px 13px;border-radius:8px;border:1px solid var(--line-2);color:var(--txt)}
+  .fbtn.main{background:var(--acc);border-color:var(--acc)}
+
+  /* benchmark bars */
+  .bench{margin:16px 0;max-width:660px}
+  .brow{display:grid;grid-template-columns:150px 1fr 60px;gap:10px;align-items:center;margin:9px 0;font-size:.85rem}
+  .brow .lbl{color:var(--txt-2);text-align:right}
+  .bbar{height:22px;border-radius:6px;background:var(--panel-2);position:relative;overflow:hidden}
+  .bbar i{position:absolute;inset:0;width:var(--w);background:linear-gradient(90deg,#3a5bb5,#5b8cff);border-radius:6px}
+  .brow.dim .bbar i{background:#3a4452}
+  .brow .pct{font-family:var(--mono);color:var(--txt)}
+  .brow.dim .pct{color:var(--txt-3)}
+
+  h3.sub{font-size:1.18rem;margin:30px 0 4px}
+  p.mini{color:var(--txt-3);font-size:.85rem;margin:3px 0 0}
+
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.9rem}
+  th,td{text-align:left;padding:9px 12px;border:1px solid var(--line);vertical-align:top}
+  th{background:var(--panel-2);color:var(--txt);font-weight:600}
+  td{color:var(--txt-2)}
+
+  details{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin:8px 0}
+  details summary{cursor:pointer;padding:13px 16px;font-weight:600;color:var(--txt);list-style:none;font-size:.95rem}
+  details summary::before{content:"▸ ";color:var(--acc-2)}
+  details[open] summary::before{content:"▾ "}
+  details .body{padding:0 16px 14px;color:var(--txt-2);font-size:.9rem}
+
+  /* ===== recursos ===== */
+  .resgroup{margin-top:26px}
+  .resgroup .rhead{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+  .resgroup .rhead .rk{font-family:var(--mono);font-size:.7rem;font-weight:700;color:var(--acc-2);letter-spacing:.12em;white-space:nowrap}
+  .resgroup .rhead h4{margin:0;font-size:1.05rem;color:var(--txt)}
+  .resgroup>p{color:var(--txt-2);font-size:.88rem;margin:4px 0 12px;max-width:820px}
+  .resgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+  .rescard{display:block;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;transition:.15s;color:inherit}
+  .rescard:hover{border-color:var(--acc);transform:translateY(-2px);text-decoration:none}
+  .rescard img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#000}
+  .rescard .rbody{padding:11px 13px}
+  .rescard b{display:block;font-size:.88rem;color:var(--txt);line-height:1.35}
+  .rescard span{display:block;font-size:.76rem;color:var(--txt-3);margin-top:4px}
+  .rescard .src{display:inline-block;margin-top:7px;font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--acc-2)}
+
+  footer{border-top:1px solid var(--line);margin-top:36px;padding:30px 0 50px;color:var(--txt-3);font-size:.83rem}
+  footer li{margin:4px 0}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="logo"><span class="dot">D</span> Devin Security Swarm</div>
+    <nav class="topnav">
+      <a href="#" onclick="go('cli',true);return false">CLI</a>
+      <a href="#" onclick="go('desktop',true);return false">Desktop</a>
+      <a href="#" onclick="go('cloud',true);return false">Cloud</a>
+      <a href="#permisos">Permisos</a>
+      <a href="#recursos">Recursos</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ============ HERO ============ -->
+  <div class="hero">
+    <div>
+      <p class="eyebrow">Guía visual · En español · Desde cero</p>
+      <h1>Devin Security Swarm</h1>
+      <p class="sub">
+        El producto de seguridad de Devin: un enjambre de agentes de IA que escanea tu
+        repositorio en paralelo, comprueba en un sandbox aislado qué vulnerabilidades son
+        explotables de verdad (no falsos positivos), y abre pull requests con el parche
+        listo para revisar. Detecta desde inyección SQL y SSRF hasta bypasses de
+        autorización encadenados entre varios archivos.
+      </p>
+    </div>
+    <div>
+      <img src="assets/security-swarm-og.png" alt="Devin for Security — candado con el logo de Devin">
+      <p class="credit">Imagen: <a href="https://cognition.com/blog/introducing-devin-security-swarm">Cognition</a></p>
+    </div>
+  </div>
+
+  <!-- ============ PIPELINE ============ -->
+  <div class="flow">
+    <div class="fnode"><span class="n">FASE 1</span><b>Tu repo</b><span class="d">Devin lee el código y su contexto</span></div>
+    <div class="farrow">→</div>
+    <div class="fnode"><span class="n">FASE 2</span><b>Threat model</b><span class="d">quién ataca, qué protege, qué queda fuera</span></div>
+    <div class="farrow">→</div>
+    <div class="fnode"><span class="n">FASE 3</span><b>Enjambre</b><span class="d">agentes en paralelo investigan lotes del repo</span></div>
+    <div class="farrow">→</div>
+    <div class="fnode"><span class="n">FASE 4</span><b>Findings</b><span class="d">hallazgos con severidad, CWE y evidencia</span></div>
+    <div class="farrow">→</div>
+    <div class="fnode"><span class="n">FASE 5</span><b>Sandbox</b><span class="d">intenta explotar cada hallazgo en un entorno aislado</span></div>
+    <div class="farrow">→</div>
+    <div class="fnode"><span class="n">FASE 6</span><b>Pull request</b><span class="d">Devin escribe el parche y abre el PR</span></div>
+  </div>
+  <p class="flow-note">
+    Esta orquestación se llama <b>Agentic MapReduce</b>: divide el repo entre agentes
+    paralelos (cobertura amplia a costo acotado) y luego compone los hallazgos en rutas
+    de ataque completas. Los escaneos corren como sesiones de Devin y consumen
+    <b>ACUs</b>; el primer escaneo hace la línea base y los siguientes pueden ser
+    incrementales, mirando solo los commits nuevos.
+  </p>
+
+  <!-- ============ PICK A SURFACE ============ -->
+  <div class="pick">
+    <button data-tab="cli"><span class="k">SUPERFICIE A</span><b>Devin CLI</b><span>El agente en tu terminal. Auditorías locales rápidas sobre tu checkout, sin salir de donde trabajas.</span><span class="arr">Ver cómo →</span></button>
+    <button data-tab="desktop"><span class="k">SUPERFICIE B</span><b>Devin Desktop</b><span>La app de escritorio (antes Windsurf). IDE completo con agentes locales y de nube en un mismo panel.</span><span class="arr">Ver cómo →</span></button>
+    <button data-tab="cloud"><span class="k">SUPERFICIE C</span><b>Devin Cloud</b><span>La webapp. Aquí vive Security Swarm completo: escaneos, findings, perfiles y dashboard. Recomendado para empezar.</span><span class="arr">Ver cómo →</span></button>
+  </div>
+
+  <!-- ============ REQUISITOS ============ -->
+  <div class="reqs">
+    <div class="req"><b><span class="rn">1.</span>Cuenta en una org Devin</b>Entra a <code>app.devin.ai</code>. Si ves <b>Security</b> en el menú lateral, tienes acceso.</div>
+    <div class="req"><b><span class="rn">2.</span>Repo conectado</b>Tu organización debe tener GitHub/GitLab integrado con acceso al repositorio a escanear.</div>
+    <div class="req"><b><span class="rn">3.</span>Permisos</b><code>Use code scans</code> para escanear + permiso de sesiones. Los otorga un admin — ver <a href="#permisos">Permisos</a>.</div>
+    <div class="req"><b><span class="rn">4.</span>Sin secretos en texto</b>Solo credenciales de prueba. Los secretos se referencian por nombre desde el gestor de la org.</div>
+  </div>
+
+  <!-- ============ TAB BAR ============ -->
+  <div class="tabbar">
+    <button class="tabbtn" data-tab="cli">Devin CLI</button>
+    <button class="tabbtn" data-tab="desktop">Devin Desktop</button>
+    <button class="tabbtn" data-tab="cloud">Devin Cloud</button>
+  </div>
+
+  <!-- ============ TAB: CLI ============ -->
+  <div class="tabpanel" id="tab-cli">
+    <div class="panel-head">
+      <h2>Devin CLI</h2>
+      <span class="tag">local</span><span class="tag orange">puente a la nube</span>
+    </div>
+    <p class="panel-sub">
+      Devin CLI es el agente corriendo en tu terminal, con acceso a tu código, tus
+      herramientas y tu entorno. Para seguridad es ideal en dos escenarios: auditar
+      puntualmente lo que tienes abierto ("¿este endpoint valida el tenant?") y lanzar
+      o delegar escaneos grandes hacia la nube con <code>/scan</code> y
+      <code>/handoff</code>.
+    </p>
+
+    <div class="term">
+      <div class="term-bar"><i></i><i></i><i></i><span>terminal</span></div>
+      <pre><span class="cmt"># 1 · Instala el CLI (macOS/Linux; en Windows: la app Desktop o WSL)</span>
+<span class="p">$</span> <span class="c">curl -fsSL https://cli.devin.ai/install.sh | bash</span>
+
+<span class="cmt"># 2 · Autentícate con tu cuenta Devin</span>
+<span class="p">$</span> <span class="c">devin auth login</span>
+<span class="p">$</span> <span class="c">devin auth status</span>   <span class="cmt"># verifica que estás logueado</span>
+
+<span class="cmt"># 3 · Entra a tu repo y abre una sesión interactiva</span>
+<span class="p">$</span> <span class="c">cd mi-repo && devin</span>
+
+<span class="cmt"># 4 · Pide la auditoría (dentro de la sesión)</span>
+<span class="p">›</span> <span class="c">audita src/ buscando SQLi, SSRF y bypasses de auth.
+    Reporta: severidad, CWE, archivo:línea y ruta de exploit.</span>
+
+<span class="cmt"># 5 · ¿El trabajo creció? Pásalo a la nube</span>
+<span class="p">›</span> <span class="c">/handoff</span>   <span class="cmt"># delega a un agente cloud con su propia máquina</span>
+<span class="p">›</span> <span class="c">/scan</span>      <span class="cmt"># inicia un code scan de Security Swarm</span></pre>
+    </div>
+
+    <figure>
+      <img src="assets/cli-terminal.png" alt="Devin CLI corriendo en la terminal: prompt interactivo con el modelo seleccionado">
+      <figcaption><b>El CLI en acción:</b> un REPL donde escribes el prompt, ves a Devin trabajar paso a paso y apruebas o rechazas cada acción. Abajo se ve el modelo activo y el plan. <span class="credit">Imagen: <a href="https://lgsreal.substack.com/p/devin-for-developers-a-practical">Luiz Real (Substack)</a></span></figcaption>
+    </figure>
+
+    <h3 class="sub">Tres formas de usarlo para seguridad</h3>
+    <div class="steps">
+      <div class="step">
+        <h4>Solo preguntar — modo lectura</h4>
+        <p><code>/ask ¿el endpoint POST /api/transfer valida que el usuario autenticado sea dueño de la cuenta origen?</code> — Devin rastrea el flujo y responde citando archivo y línea, sin tocar nada. También existe <code>/plan</code> para explorar y proponer sin modificar archivos.</p>
+      </div>
+      <div class="step">
+        <h4>Auditar y arreglar — con permisos de edición</h4>
+        <p><code>devin --permission-mode accept-edits -- "audita src/routes/ y corrige lo que encuentres"</code> — Devin escribe el fix mínimo, añade tests de regresión y te explica la ruta de exploit de cada hallazgo. Cicla modos con <code>Shift+Tab</code>.</p>
+      </div>
+      <div class="step">
+        <h4>Escalar a la nube — el trabajo pesado</h4>
+        <ul>
+          <li><code>/scan</code> — inicia un code scan de Security Swarm sobre el repo (corre en la nube, consume ACUs).</li>
+          <li><code>/handoff</code> — transfiere la sesión a un agente remoto con su propio entorno; sigues el progreso en vivo desde la terminal.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="note">
+      <b>Trucos útiles:</b> escribe <code>@</code> para adjuntar archivos como contexto ·
+      <code>/mcp</code> lista servidores MCP conectados ·
+      <code>devin cloud drs secret-create</code> sube secretos de organización sin pegarlos en el chat.
+    </div>
+    <div class="note warn">
+      <b>Límite importante:</b> los findings, su triage, los perfiles y el dashboard de
+      Security Swarm se gestionan en <b>Devin Cloud</b> (pestaña Cloud). El CLI es tu
+      lupa local y tu rampa de lanzamiento — no la consola de seguridad.
+    </div>
+  </div>
+
+  <!-- ============ TAB: DESKTOP ============ -->
+  <div class="tabpanel" id="tab-desktop">
+    <div class="panel-head">
+      <h2>Devin Desktop</h2>
+      <span class="tag">IDE + agentes</span><span class="tag green">local y nube en un panel</span>
+    </div>
+    <p class="panel-sub">
+      Devin Desktop es la aplicación de escritorio — la evolución de Windsurf. Pone el
+      <b>Agent Command Center</b> al frente de un IDE completo: gestionas agentes locales
+      y de nube, PRs y contexto desde un solo lugar, y los <b>Spaces</b> permiten que
+      agentes relacionados compartan contexto entre sí (por ejemplo, uno audita mientras
+      otro prepara los fixes).
+    </p>
+
+    <figure class="annotated">
+      <img src="assets/desktop-ide.png" alt="Devin Desktop: IDE con Explorer, área de prompt y panel de sesión del agente">
+      <span class="pin" style="left:15%;top:26%">1</span>
+      <span class="pin" style="left:48%;top:33%">2</span>
+      <span class="pin" style="left:85%;top:40%">3</span>
+      <figcaption>
+        <b>La interfaz, anotada:</b> a la izquierda el Explorer de archivos; en el centro el área de prompt con las acciones de proyecto; a la derecha el panel donde vive la sesión del agente.
+        <span class="credit">Imagen: <a href="https://lgsreal.substack.com/p/devin-for-developers-a-practical">Luiz Real (Substack)</a></span>
+      </figcaption>
+      <div class="legend">
+        <span><b>1</b> Open Folder → abre tu repo en el workspace</span>
+        <span><b>2</b> Prompt → aquí escribes la auditoría</span>
+        <span><b>3</b> Panel del agente → sesión local o cloud, con su log en vivo</span>
+      </div>
+    </figure>
+
+    <div class="steps">
+      <div class="step">
+        <h4>Descarga e instala</h4>
+        <p>Desde <code>devin.ai</code> para Windows, macOS o Linux. Si venías de Windsurf, es la misma aplicación renombrada — el cambio llegó como update normal y conserva tu plan y tu trabajo.</p>
+      </div>
+      <div class="step">
+        <h4>Inicia sesión</h4>
+        <p>Con la misma cuenta/organización Devin que usas en la web. Las sesiones que lances aquí conviven con las de Cloud.</p>
+      </div>
+      <div class="step">
+        <h4>Abre el proyecto</h4>
+        <p><b>Open Folder</b> para un repo local, <b>Clone repository</b> para traerlo de tu proveedor, o <b>Connect via SSH</b> para trabajar sobre una máquina remota.</p>
+      </div>
+      <div class="step">
+        <h4>Nueva sesión → pide la auditoría</h4>
+        <p>En el prompt del centro o del panel lateral, describe qué quieres revisar. Ejemplo: <em>"Audita este proyecto: rastrea la entrada del usuario hasta cada operación sensible, verifica autenticación y validación en cada frontera, y reporta cada hallazgo con severidad, CWE y archivo:línea."</em></p>
+      </div>
+      <div class="step">
+        <h4>Escaneo completo → nube</h4>
+        <p>Escribe <code>/scan</code> en el composer para lanzar un code scan de Security Swarm, o usa <code>/handoff</code> para delegar la sesión a un agente cloud. Los findings resultantes se revisan en la página <b>Security</b> de Devin Cloud.</p>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <figure>
+        <img src="assets/devin-desktop-og.jpg" alt="Transición de Windsurf a Devin Desktop">
+        <figcaption><b>Windsurf → Devin Desktop:</b> el IDE que ya conocías, ahora dentro de la familia Devin junto al CLI y Devin Review. <span class="credit">Imagen: <a href="https://cognition.com/blog/introducing-devin-desktop">Cognition — "Introducing Devin Desktop"</a></span></figcaption>
+      </figure>
+      <figure>
+        <img src="assets/cloud-session.png" alt="Sesión de Devin ejecutando comandos y reportando resultados">
+        <figcaption><b>Una sesión trabajando:</b> Devin ejecuta comandos, muestra el log a la derecha y resume los resultados — así verás correr tus auditorías y handoffs. <span class="credit">Imagen: <a href="https://lgsreal.substack.com/p/devin-for-developers-a-practical">Luiz Real (Substack)</a></span></figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <!-- ============ TAB: CLOUD ============ -->
+  <div class="tabpanel" id="tab-cloud">
+    <div class="panel-head">
+      <h2>Devin Cloud</h2>
+      <span class="tag green">Security Swarm completo</span><span class="tag">recomendado para empezar</span>
+    </div>
+    <p class="panel-sub">
+      La webapp <code>app.devin.ai</code> es donde vive todo el producto: lanzar y
+      programar escaneos, revisar el threat model, hacer triage de findings, validar en
+      sandbox, asignar remediaciones a Devin y medir el progreso en el dashboard.
+    </p>
+
+    <figure class="annotated">
+      <img src="assets/cloud-sidebar-security.png" alt="Webapp de Devin: sidebar izquierdo con New session, Automations, Security, Review y Wiki">
+      <span class="pin" style="left:10%;top:23%">1</span>
+      <span class="pin" style="left:60%;top:42%">2</span>
+      <figcaption>
+        <b>Dónde empezar:</b> la página Security es tu consola de escaneos; el composer es la entrada rápida para lanzar sesiones (y también acepta <code>/scan</code>).
+        <span class="credit">Imagen: <a href="https://lgsreal.substack.com/p/devin-for-developers-a-practical">Luiz Real (Substack)</a></span>
+      </figcaption>
+      <div class="legend">
+        <span><b>1</b> Sidebar → <b>Security</b> (ícono de escudo) → botón "Start scan"</span>
+        <span><b>2</b> Alternativa: composer de una sesión → comando <code>/scan</code></span>
+      </div>
+    </figure>
+
+    <h3 class="sub">Tu primer escaneo, en video</h3>
+    <div class="steps">
+      <div class="step">
+        <h4>Security → Start scan → Single repo → elige el repo → Run Scan</h4>
+        <p>Deja el <b>perfil</b> en blanco (usa el escaneo de seguridad integrado) y mantén <b>Interactive mode</b> activado — viene así por defecto en el primer escaneo de la organización.</p>
+      </div>
+      <div class="step">
+        <h4>Aprueba el threat model propuesto</h4>
+        <p>Devin pausa y te muestra las reglas que va a aplicar: atacante asumido, activos sensibles, entry points y exclusiones. Pulsa <b>"Looks good, start scanning"</b> para aceptar, o escribe feedback ("los scripts de <code>/tools</code> están fuera de alcance") y Devin regenera el modelo.</p>
+      </div>
+      <div class="step">
+        <h4>Mira los findings llegar en vivo</h4>
+        <p>La página se actualiza sola: lista agrupada por severidad a la izquierda, detalle a la derecha, y pestañas <b>Open / Reviewed / Dismissed</b> con conteo en tiempo real.</p>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <figure>
+        <video src="assets/sec-first-scan.mp4" autoplay muted loop playsinline></video>
+        <figcaption><b>Lanzar el primer escaneo</b> — el panel New Scan, elección de repo y arranque. <span class="credit">Video oficial: Cognition Docs</span></figcaption>
+      </figure>
+      <figure>
+        <video src="assets/finding.mp4" autoplay muted loop playsinline></video>
+        <figcaption><b>Un finding por dentro</b> — navegar la lista y abrir el detalle con su evidencia. <span class="credit">Video oficial: Cognition Docs</span></figcaption>
+      </figure>
+    </div>
+
+    <h3 class="sub">Anatomía de un finding</h3>
+    <div class="finding">
+      <div class="fhead">
+        <span class="sev high">HIGH</span>
+        <span class="fname">SQL Injection en búsqueda de usuarios</span>
+        <span class="conf">validado en sandbox</span>
+      </div>
+      <div class="fbody">
+        <code>src/api/users.ts:42 — CWE-89</code>
+        El parámetro <code>?q=</code> llega sin sanitizar al query builder. Explotable sin
+        autenticación: expone emails de todos los tenants. Trazado desde la ruta hasta el
+        sink, con las mitigaciones comprobadas en cada capa.
+        <br><b>Fix sugerido:</b> parametrizar la consulta y añadir test de regresión.
+      </div>
+      <div class="factions">
+        <span class="fbtn main">Assign to Devin →</span>
+        <span class="fbtn">Feedback</span>
+        <span class="fbtn">Adjust</span>
+        <span class="fbtn">Open ▾</span>
+      </div>
+    </div>
+    <p class="mini">
+      Ilustración basada en la UI real. Cada finding incluye severidad, estado,
+      explotabilidad, confianza, categoría CWE, archivos y snippets afectados,
+      descripción, recomendación de remediación, resultado de la validación en sandbox y
+      los PRs asociados. <b>Nota:</b> <em>Reviewed</em> es un estado de triage — no
+      significa que el fix se mergeó.
+    </p>
+
+    <h3 class="sub">Las 4 acciones sobre un finding</h3>
+    <div class="grid2">
+      <figure>
+        <video src="assets/assign.mp4" autoplay muted loop playsinline></video>
+        <figcaption><b>Assign to Devin</b> — lanza una sesión que escribe el parche y abre el pull request; queda vinculado al finding para seguimiento. <span class="credit">Video: Cognition</span></figcaption>
+      </figure>
+      <figure>
+        <video src="assets/feedback.mp4" autoplay muted loop playsinline></video>
+        <figcaption><b>Feedback</b> — das contexto ("ese flujo va detrás de un gateway interno") y afina el perfil para que futuros escaneos lo tengan en cuenta. <span class="credit">Video: Cognition</span></figcaption>
+      </figure>
+      <figure>
+        <video src="assets/adjust.mp4" autoplay muted loop playsinline></video>
+        <figcaption><b>Adjust</b> — sobrescribe la severidad con contexto opcional, p. ej. bajar a Medium porque explotarlo requiere acceso interno. <span class="credit">Video: Cognition</span></figcaption>
+      </figure>
+      <figure>
+        <video src="assets/status.mp4" autoplay muted loop playsinline></video>
+        <figcaption><b>Menú de estado</b> — Open mientras requiera acción, Reviewed tras el triage, Dismissed si es falso positivo o duplicado. <span class="credit">Video: Cognition</span></figcaption>
+      </figure>
+    </div>
+
+    <h3 class="sub">Por qué Swarm: el benchmark oficial</h3>
+    <div class="bench">
+      <div class="brow"><span class="lbl">Devin Security</span><div class="bbar"><i style="--w:72%"></i></div><span class="pct">72%</span></div>
+      <div class="brow dim"><span class="lbl">Claude Security</span><div class="bbar"><i style="--w:68%"></i></div><span class="pct">68%</span></div>
+      <div class="brow dim"><span class="lbl">Codex Security</span><div class="bbar"><i style="--w:48%"></i></div><span class="pct">48%</span></div>
+      <div class="brow dim"><span class="lbl">Cursor Security</span><div class="bbar"><i style="--w:26%"></i></div><span class="pct">26%</span></div>
+    </div>
+    <p class="mini">
+      Recall sobre 50 vulnerabilidades reales con GHSA publicada, en repos de 14
+      lenguajes. Devin fue el único que encontró tres críticas que el resto no vio
+      (sandbox bypass por template injection en PHP, argument injection por parsing de
+      metadata, superficie de deserialización amplia en Spring Kafka). ~$90 por corrida —
+      un 30% menos que la alternativa comparable. Fuente:
+      <a href="https://cognition.com/blog/introducing-devin-security-swarm">Cognition — eval de Security Swarm</a>.
+    </p>
+
+    <h3 class="sub">Después del primer escaneo</h3>
+    <div class="steps">
+      <div class="step">
+        <h4>Perfiles de escaneo</h4>
+        <p>Configuración reutilizable que guía cada etapa: threat model, investigación, triage/severidades, validación en sandbox, reporte y remediación. Se crean con <b>"Generate with Devin"</b> (describes la app en lenguaje natural) o a mano, y se gestionan en la pestaña <b>Profiles</b>. Consejo: un perfil por persona de atacante.</p>
+      </div>
+      <div class="step">
+        <h4>Modos de escaneo</h4>
+        <p><b>Single repo</b> (un repo) · <b>Multi-repo</b> (hasta 200 analizados en conjunto — ideal para microservicios que se llaman entre sí) · <b>Bulk scan</b> (un escaneo independiente por repo, para cubrir toda la org) · <b>Ingest findings</b> (importa findings de Snyk, Semgrep, SARIF, etc. para triagearlos y remediarlos en Devin).</p>
+      </div>
+      <div class="step">
+        <h4>Esfuerzo: Normal vs Deep</h4>
+        <p><b>Normal</b> es más rápido y barato — para rutina e incrementales. <b>Deep</b> rastrea cada finding más a fondo — para el primer escaneo serio de un codebase de alto riesgo o revisiones profundas periódicas.</p>
+      </div>
+      <div class="step">
+        <h4>Auto Scan e incrementales</h4>
+        <p>Al lanzar un single-repo eliges schedule diario/semanal/mensual/custom; cada corrida solo investiga los commits nuevos (más barato con el tiempo). <b>No es por cada commit</b> — es por horario; para disparo por evento (push, webhook) usa <b>Automations → "Code scan"</b>. Para apagarlo: edita o desactiva el schedule desde el escaneo, o apaga el toggle de la automation. También puedes lanzar lo incremental a mano con <b>"Scan new commits"</b>.</p>
+      </div>
+      <div class="step">
+        <h4>Dashboard, historial y API</h4>
+        <p>Tras el primer escaneo, la página Security muestra PRs creados/mergeados y findings por severidad a 7/30/90 días. Cada escaneo guarda su <b>scan history</b> (full vs incremental, ACUs, sesión), exporta findings a CSV, y todo es alcanzable vía la <b>Code Scans API v3</b> para integrarlo en CI o tu tooling.</p>
+      </div>
+    </div>
+
+    <div class="note">
+      <b>Regla de oro para revisar findings:</b> un patrón de código riesgoso es una
+      <b>pista</b>, no una prueba. Antes de actuar verifica que el hallazgo trace un
+      camino <b>alcanzable</b> desde entrada controlada por el atacante, que considere
+      las mitigaciones existentes y que explique un impacto de seguridad concreto. Y una
+      validación en sandbox fallida no equivale a falso positivo: revisa los artefactos.
+    </div>
+  </div>
+
+  <!-- ============ PERMISOS ============ -->
+  <section id="permisos" style="margin:50px 0 30px;scroll-margin-top:120px">
+    <h3 class="sub" style="font-size:1.3rem">Permisos — si algo no te aparece, es esto</h3>
+    <table>
+      <tr><th>Permiso</th><th>Desbloquea</th><th>Por defecto</th></tr>
+      <tr><td><b>View code scans</b></td><td>Ver escaneos, perfiles y findings</td><td>Admin</td></tr>
+      <tr><td><b>Use code scans</b></td><td>Lanzar escaneos, crear perfiles, dar feedback, ajustar y asignar findings</td><td>Admin</td></tr>
+      <tr><td><b>Manage code scans</b></td><td>Archivar escaneos y configurar Auto Scan</td><td>Admin</td></tr>
+      <tr><td><b>Manage account code scans</b></td><td>Perfiles a nivel enterprise</td><td>Enterprise admin</td></tr>
+    </table>
+    <p class="mini">
+      Los miembros no reciben permisos de escaneo por defecto — un admin los otorga con
+      roles personalizados. Iniciar escaneos y asignar findings también requiere permiso
+      de sesiones Devin; Auto Scan además requiere gestionar automatizaciones. Para
+      CLI/Desktop hace falta el permiso <b>"Use Devin CLI"</b>.
+    </p>
+  </section>
+
+  <!-- ============ RECURSOS ============ -->
+  <section id="recursos" style="margin:50px 0 30px;scroll-margin-top:120px">
+    <h3 class="sub" style="font-size:1.3rem">10 artículos y guías para profundizar</h3>
+    <p class="mini" style="margin-bottom:6px">
+      Selección de guías con pasos e imágenes, agrupadas por lo que preguntas:
+      configurar el repo, "promptear" a Devin/Swarm, y activar o desactivar el
+      escaneo automático de commits nuevos.
+    </p>
+
+    <div class="resgroup">
+      <div class="rhead"><span class="rk">TEMA 1</span><h4>Configurar tu repositorio</h4></div>
+      <p>Security Swarm solo escanea repos conectados a tu organización. Estas guías cubren la integración con GitHub/GitLab y la configuración del entorno (el "snapshot" desde el que arranca cada sesión — clave para que la validación en sandbox funcione).</p>
+      <div class="resgrid">
+        <a class="rescard" href="https://docs.devin.ai/integrations/gh" target="_blank" rel="noopener">
+          <img src="assets/res/github-docs.png" alt="Devin GitHub integration">
+          <div class="rbody"><b>GitHub Integration</b><span>Settings → Integrations → GitHub → Add Connection; elegir todos los repos o una lista. La vía oficial, paso a paso.</span><span class="src">Docs oficiales · Cognition</span></div>
+        </a>
+        <a class="rescard" href="https://fast.io/resources/devin-ai-github-integration/" target="_blank" rel="noopener">
+          <img src="assets/res/fastio-github.png" alt="How to Connect Devin AI to GitHub">
+          <div class="rbody"><b>How to Connect Devin AI to GitHub</b><span>Guía externa detallada: scopes del GitHub App, curar el set de repos, indexación y el primer PR.</span><span class="src">Fast.io Editorial Team</span></div>
+        </a>
+        <a class="rescard" href="https://docs.devin.ai/onboard-devin/environment" target="_blank" rel="noopener">
+          <img src="assets/res/env-setup.png" alt="Devin environment setup">
+          <div class="rbody"><b>Devin Environment Setup</b><span>Cómo configurar el entorno (blueprint → snapshot) para que cada sesión arranque con repo, dependencias y secretos listos.</span><span class="src">Docs oficiales · Cognition</span></div>
+        </a>
+        <a class="rescard" href="https://docs.devin.ai/integrations/gitlab" target="_blank" rel="noopener">
+          <img src="assets/res/gitlab-docs.png" alt="Devin GitLab integration">
+          <div class="rbody"><b>GitLab Integration</b><span>Conectar GitLab (cloud o self-managed): service account, permisos de repo y webhooks para merge requests.</span><span class="src">Docs oficiales · Cognition</span></div>
+        </a>
+        <a class="rescard" href="https://www.youtube.com/watch?v=IvphwSu-OkM" target="_blank" rel="noopener">
+          <img src="assets/res/youtube-env.jpg" alt="Video: cómo configurar el entorno de Devin para tu repo">
+          <div class="rbody"><b>Video: Set Up Devin's Environment for Your Repo</b><span>Tutorial en video: conectar GitHub, añadir el repo, editar el blueprint y lanzar el build del snapshot.</span><span class="src">YouTube · Cognition</span></div>
+        </a>
+      </div>
+    </div>
+
+    <div class="resgroup">
+      <div class="rhead"><span class="rk">TEMA 2</span><h4>Cómo "promptear" a Devin y a Security Swarm</h4></div>
+      <p>Con Swarm no escribes un prompt libre: escribes el <b>perfil</b> (threat model, investigación, severidades, validación, remediación). Estas guías enseñan a dar instrucciones precisas y a convertirlas en perfiles y playbooks reutilizables.</p>
+      <div class="resgrid">
+        <a class="rescard" href="https://docs.devin.ai/work-with-devin/security-swarm" target="_blank" rel="noopener">
+          <img src="assets/res/swarm-docs.png" alt="Security Swarm docs">
+          <div class="rbody"><b>Security Swarm — guía completa</b><span>La referencia oficial: escaneos, perfiles con ejemplos de texto para cada campo, modos, esfuerzo y validación en sandbox.</span><span class="src">Docs oficiales · Cognition</span></div>
+        </a>
+        <a class="rescard" href="https://security-recipes.ai/devin/" target="_blank" rel="noopener">
+          <img src="assets/res/recipes.png" alt="Devin Vulnerability Remediation recipe">
+          <div class="rbody"><b>Devin Vulnerability Remediation</b><span>Receta paso a paso del ciclo completo: escaneo interactivo → revisar finding → Assign to Devin → revisar el PR → verificar el fix.</span><span class="src">Security Recipes</span></div>
+        </a>
+        <a class="rescard" href="https://docs.devin.ai/essential-guidelines/instructing-devin-effectively" target="_blank" rel="noopener">
+          <img src="assets/res/instructing.png" alt="Instructing Devin Effectively">
+          <div class="rbody"><b>Instructing Devin Effectively</b><span>Cómo estructurar instrucciones: contexto, pasos, criterios de éxito y qué decisiones tomar tú por adelantado.</span><span class="src">Docs oficiales · Cognition</span></div>
+        </a>
+        <a class="rescard" href="https://docs.devin.ai/essential-guidelines/prompt-templates-cheat-sheet" target="_blank" rel="noopener">
+          <img src="assets/res/cheat-sheet.png" alt="Prompt Templates Cheat Sheet">
+          <div class="rbody"><b>Prompt Templates Cheat Sheet</b><span>Plantillas listas para copiar: implementación, refactor, code review, research — adáptalas a auditorías de seguridad.</span><span class="src">Docs oficiales · Cognition</span></div>
+        </a>
+      </div>
+    </div>
+
+    <div class="resgroup">
+      <div class="rhead"><span class="rk">TEMA 3</span><h4>Activar / desactivar el escaneo proactivo</h4></div>
+      <p>
+        Aclaración importante: el modo "proactivo" <b>no escanea en cada commit</b> al instante —
+        <b>Auto Scan</b> corre en un horario (diario, semanal, mensual o custom) y solo investiga
+        los commits acumulados desde la última corrida (incremental). Para algo realmente
+        "por evento" (push, webhook) se usa <b>Automations</b> con el agente "Code scan".
+        Se apaga igual de fácil: edita o desactiva el schedule del escaneo, o apaga el
+        toggle de la automation.
+      </p>
+      <div class="resgrid">
+        <a class="rescard" href="https://docs.devin.ai/product-guides/automations" target="_blank" rel="noopener">
+          <img src="assets/res/automations.png" alt="Devin Automations">
+          <div class="rbody"><b>Automations</b><span>Schedules (RRULE), triggers por evento (GitHub, Slack, webhooks) y el toggle para activar/desactivar sin perder la configuración.</span><span class="src">Docs oficiales · Cognition</span></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section id="faq" style="margin-bottom:60px;scroll-margin-top:120px">
+    <h3 class="sub" style="font-size:1.3rem">Preguntas rápidas</h3>
+    <details><summary>¿Un escaneo completado significa que mi repo está limpio?</summary>
+      <div class="body">No. Ningún escáner garantiza cobertura completa: depende del alcance, el perfil y si la validación pudo correr. Lanza escaneos por modelo de atacante, mantén Auto Scan activo y combínalo con tu revisión habitual.</div>
+    </details>
+    <details><summary>¿Por qué dos escaneos pueden dar resultados distintos?</summary>
+      <div class="body">Es análisis agéntico, no determinista. Un buen perfil (alcance + threat model + severidades claras), el interactive mode y el feedback mantienen la cobertura consistente entre corridas.</div>
+    </details>
+    <details><summary>¿Cómo reduce los falsos positivos?</summary>
+      <div class="body">Investiga cada patrón <em>en contexto</em>: rastrea flujos de datos, verifica controles de auth/validación y evalúa el impacto real. Cada finding trae nivel de confianza y evidencia — revísalos antes de actuar.</div>
+    </details>
+    <details><summary>¿Puedo traer findings de Snyk / Semgrep / SARIF?</summary>
+      <div class="body">Sí — el modo <b>Ingest findings</b> con un perfil de ingesta (hasta 10 archivos adjuntos, o apuntando a una API/archivo del repo). Devin los triagea, valida y remedia junto a los suyos.</div>
+    </details>
+    <details><summary>¿No veo "Security" en el sidebar o no puedo escanear?</summary>
+      <div class="body">Te falta el permiso <b>Use code scans</b> — los miembros no lo tienen por defecto; pídeselo a un administrador. Para el CLI/Desktop también se requiere <b>"Use Devin CLI"</b>.</div>
+    </details>
+    <details><summary>¿Cuánto cuesta un escaneo?</summary>
+      <div class="body">Corre como sesiones de Devin y consume ACUs según tamaño del repo, esfuerzo (Normal/Deep) y cuántos findings se validan en sandbox. Míralo en "Usage" de cada escaneo. El primero es el más caro; los incrementales y Auto Scan abaratan las corridas siguientes.</div>
+    </details>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <p><strong>Créditos de imágenes y video</strong></p>
+    <ul>
+      <li>Capturas de la webapp, Desktop y CLI: <a href="https://lgsreal.substack.com/p/devin-for-developers-a-practical">Luiz Real — "Devin for Developers: A Practical Tour of Web, CLI, and Desktop" (Substack)</a></li>
+      <li>Videos del producto (escaneo, finding, assign, feedback, adjust, status): <a href="https://docs.devinenterprise.com/work-with-devin/security-swarm">Cognition — documentación oficial de Security Swarm</a></li>
+      <li>Imágenes de marca: <a href="https://cognition.com/blog/introducing-devin-security-swarm">Cognition — "Introducing Devin Security Swarm"</a> · <a href="https://cognition.com/blog/introducing-devin-desktop">"Introducing Devin Desktop"</a> · <a href="https://cognition.com/blog/devin-for-terminal">"Devin CLI"</a></li>
+    </ul>
+    <p style="margin-top:16px">Guía no oficial con fines educativos. Devin, Devin Cloud, Devin Desktop, Devin CLI y Security Swarm son productos de Cognition.</p>
+  </div>
+</footer>
+
+<script>
+  const btns = document.querySelectorAll('.tabbtn');
+  const picks = document.querySelectorAll('.pick button');
+  const panels = document.querySelectorAll('.tabpanel');
+  function go(id, scroll){
+    btns.forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+    picks.forEach(b => b.classList.toggle('on', b.dataset.tab === id));
+    panels.forEach(p => {
+      const on = p.id === 'tab-' + id;
+      p.classList.toggle('active', on);
+      p.querySelectorAll('video').forEach(v => { if(on){ v.play().catch(()=>{}); } else { v.pause(); } });
+    });
+    history.replaceState(null, '', '#' + id);
+    if(scroll) document.querySelector('.tabbar').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  btns.forEach(b => b.addEventListener('click', () => go(b.dataset.tab, true)));
+  picks.forEach(b => b.addEventListener('click', () => go(b.dataset.tab, true)));
+  go(['cli','desktop','cloud'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'cloud', false);
+</script>
+
+</body>
+</html>
