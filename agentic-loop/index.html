@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agentic Loop y Human in the Loop · Devin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Sans+Condensed:wght@700&family=IBM+Plex+Mono&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0c0d; --card:#1a1a1c; --border:#2a2a2e;
+    --txt:#ffffff; --muted:#9b9ba1; --body:#c4c4ca; --label:#8a8a90;
+    --accent:#ffffff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#000;color:var(--txt);font-family:"IBM Plex Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body{display:flex;flex-direction:column;align-items:center;gap:32px;padding:32px 16px}
+
+  .slide{
+    position:relative;width:min(1280px,100%);aspect-ratio:16/9;
+    background:radial-gradient(ellipse at 50% 40%,#1c1c1e 0%,var(--bg) 60%,#080809 100%);
+    border-radius:6px;overflow:hidden;padding:0 7% ;
+    display:flex;flex-direction:column;
+    font-size:clamp(9px,1.25vw,16px);
+  }
+  .logo,.cognition{mix-blend-mode:screen}
+  .logo{position:absolute;top:8.5%;left:7%;height:8.3%}
+  .cognition{position:absolute;bottom:6.5%;right:7%;height:6.3%}
+  .label{position:absolute;top:19%;left:7%;font-family:"IBM Plex Mono",monospace;font-size:.85em;letter-spacing:.06em;color:var(--label);text-transform:uppercase}
+  h1{font-family:"IBM Plex Sans Condensed","IBM Plex Sans",sans-serif;font-weight:700;font-size:3.1em;letter-spacing:-.01em;line-height:1.05;margin-top:22%}
+  .sub{color:var(--muted);font-size:1.15em;margin-top:.7em}
+  .footnote{position:absolute;bottom:6.8%;left:7%;font-size:.8em;color:var(--label)}
+  .footnote b{color:var(--txt)}
+
+  .grid{display:grid;gap:1.1em;margin-top:2em}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:1fr 1fr 1fr}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:.5em;padding:1.1em 1.25em}
+  .card h3{font-size:1.1em;font-weight:700;margin-bottom:.55em}
+  .card ul{list-style:none}
+  .card li{position:relative;padding-left:1.1em;color:var(--body);font-size:.95em;line-height:1.5;margin:.25em 0}
+  .card li::before{content:"";position:absolute;left:0;top:.62em;width:.35em;height:.35em;background:#5a5a60;border-radius:1px}
+  .num{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:.8em;color:var(--label);margin-bottom:.4em}
+
+  /* flow (slide 2) */
+  .flow{display:flex;align-items:stretch;gap:.6em;margin-top:2em}
+  .flow .card{flex:1}
+  .arrow{align-self:center;color:#5a5a60;font-size:1.6em}
+  .loop{margin-top:1.2em;text-align:center;color:var(--muted);font-size:1em}
+  .loop code{font-family:"IBM Plex Mono",monospace;color:var(--txt)}
+
+  /* timeline (slide 3) */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:.9em;margin-top:1.8em}
+  .step{background:var(--card);border:1px solid var(--border);border-radius:.5em;padding:.9em 1.1em}
+  .step .k{font-family:"IBM Plex Mono",monospace;font-size:.75em;color:var(--label);text-transform:uppercase;letter-spacing:.06em}
+  .step p{color:var(--body);font-size:.95em;margin-top:.35em;line-height:1.45}
+  .step code{font-family:"IBM Plex Mono",monospace;color:var(--txt);font-size:.9em}
+  .step.ok{border-color:#3d3d42}
+  .step.ok .k{color:#c8c8ce}
+
+  /* rows (slide 5) */
+  .rows{display:flex;flex-direction:column;gap:.8em;margin-top:1.8em}
+  .row{display:grid;grid-template-columns:2fr 5fr 2fr;align-items:center;gap:1.5em;background:var(--card);border:1px solid var(--border);border-radius:.5em;padding:.95em 1.25em}
+  .row h3{font-size:1.1em}
+  .row p{color:var(--body);font-size:.95em;line-height:1.45}
+  .row .tag{font-family:"IBM Plex Mono",monospace;font-size:.75em;color:var(--label);text-align:right;text-transform:uppercase;letter-spacing:.06em}
+  .row q{color:var(--txt)}
+
+  .takeaway{margin-top:1.6em;color:var(--muted);font-size:1.05em}
+  .takeaway b{color:var(--txt)}
+
+  .tight h1{margin-top:19%}
+  .tight .grid{margin-top:1.4em;gap:.8em}
+  .tight .card{padding:.85em 1.1em}
+  .tight .card li{margin:.15em 0}
+  /* orquestador (sub-agentes) */
+  .orch{display:grid;grid-template-columns:2.2fr auto 3fr;align-items:center;gap:1em;margin-top:1.6em}
+  .orch .card.main{border-color:#4a4a50}
+  .subs{display:grid;gap:.6em}
+  .subs .card{padding:.7em 1em}
+  .subs .card h3{margin-bottom:.15em;font-size:1em}
+  .subs .card p{color:var(--body);font-size:.85em}
+  .orch .arrow{font-size:1.8em}
+
+  /* eval loop */
+  .evalflow{display:flex;align-items:center;gap:.5em;margin-top:1.6em}
+  .evalflow .card{flex:1;text-align:center;padding:.9em .8em}
+  .evalflow .card h3{margin-bottom:.25em}
+  .evalflow .card p{color:var(--body);font-size:.85em;line-height:1.4}
+  .evalflow .gate{border-color:#5a5a60;background:#202024}
+  .verdict{display:grid;grid-template-columns:1fr 1fr;gap:1em;margin-top:.9em}
+  .verdict .card{padding:.7em 1em;font-size:.9em;color:var(--body)}
+  .verdict b{color:var(--txt);font-family:"IBM Plex Mono",monospace;font-size:.85em;letter-spacing:.05em}
+
+  /* recipe */
+  .recipe{display:grid;grid-template-columns:1.1fr 1fr;gap:1em;margin-top:1.1em;align-items:start}
+  pre{background:#0a0a0b;border:1px solid var(--border);border-radius:.5em;padding:.7em .9em;font-family:"IBM Plex Mono",monospace;font-size:.72em;line-height:1.45;color:var(--body);overflow:hidden;white-space:pre}
+  pre .kw{color:#fff;font-weight:600}
+  pre .cm{color:#6c6c72}
+  .recipe .card ol{padding-left:1.2em;color:var(--body);font-size:.9em;line-height:1.5}
+  .recipe .card li{margin:.15em 0;padding-left:0}
+  .recipe .card li::before{display:none}
+  .recipe .card h3{margin-bottom:.35em}
+  .recipe .card li b{color:var(--txt)}
+
+  @media print{
+    body{gap:0;padding:0;background:#000}
+    .slide{width:100%;border-radius:0;page-break-after:always;font-size:16px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ PORTADA ============ -->
+<section class="slide" id="portada">
+  <img class="logo" src="assets/devin.png" alt="Devin" style="top:40%;height:12%">
+  <h1 style="margin-top:0;position:absolute;top:56%;left:7%;font-family:'IBM Plex Sans';font-weight:400;font-size:1.5em;color:var(--body)">Agentic Loop y Human in the Loop: cómo piensa y cuándo pregunta un agente</h1>
+  <div class="footnote"><b>Diego Aguirre</b> · Embajador de Cognition en Argentina</div>
+  <img class="cognition" src="assets/cognition.png" alt="Cognition">
+</section>
+
+<!-- ============ 1. QUÉ ES ============ -->
+<section class="slide">
+  <img class="logo" src="assets/devin.png" alt="Devin">
+  <div class="label">Sección 01 · Agentic Loop</div>
+  <h1>¿Qué es un Agentic Loop?</h1>
+  <p class="sub">Un chatbot responde una vez. Un agente repite un ciclo hasta cumplir el objetivo.</p>
+
+  <div class="grid g2">
+    <div class="card">
+      <h3>Chatbot (una vuelta)</h3>
+      <ul>
+        <li>Recibe un prompt y devuelve texto.</li>
+        <li>No ejecuta nada ni verifica el resultado.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Agente (ciclo)</h3>
+      <ul>
+        <li>Piensa → usa herramientas → observa → vuelve a pensar.</li>
+        <li>Decide el siguiente paso según lo que observó, no según un guion.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="takeaway"><b>Idea central:</b> el modelo elige sus propias acciones y corrige el rumbo hasta terminar.</p>
+  <img class="cognition" src="assets/cognition.png" alt="Cognition">
+</section>
+
+<!-- ============ 2. FASES ============ -->
+<section class="slide">
+  <img class="logo" src="assets/devin.png" alt="Devin">
+  <div class="label">Sección 01 · Agentic Loop</div>
+  <h1>Las 4 fases del ciclo</h1>
+  <p class="sub">Cada vuelta del loop pasa por las mismas cuatro fases.</p>
+
+  <div class="flow">
+    <div class="card"><span class="num">01</span><h3>Percibir</h3><ul><li>Lee el objetivo, el contexto y el resultado del paso anterior.</li></ul></div>
+    <div class="arrow">→</div>
+    <div class="card"><span class="num">02</span><h3>Razonar</h3><ul><li>Planifica: ¿qué falta? ¿qué herramienta uso ahora?</li></ul></div>
+    <div class="arrow">→</div>
+    <div class="card"><span class="num">03</span><h3>Actuar</h3><ul><li>Llama una herramienta: buscar, ejecutar código, editar, API.</li></ul></div>
+    <div class="arrow">→</div>
+    <div class="card"><span class="num">04</span><h3>Observar</h3><ul><li>Recibe el resultado y lo compara con el objetivo.</li></ul></div>
+  </div>
+  <p class="loop"><code>↺</code> Vuelve a 01 hasta que la tarea esté lista o se agote el presupuesto de pasos.</p>
+  <img class="cognition" src="assets/cognition.png" alt="Cognition">
+</section>
+
+<!-- ============ 3. EJEMPLO ============ -->
+<section class="slide">
+  <img class="logo" src="assets/devin.png" alt="Devin">
+  <div class="label">Sección 01 · Agentic Loop</div>
+  <h1>Ejemplo: «arreglá el test que falla»</h1>
+  <p class="sub">Dos vueltas del loop. El agente elige cada paso a partir de lo que observó.</p>
+
+  <div class="steps">
+    <div class="step"><div class="k">Razonar</div><p>Necesito ver el error primero.</p></div>
+    <div class="step"><div class="k">Actuar</div><p>Ejecuta <code>npm test</code></p></div>
+    <div class="step"><div class="k">Observar</div><p>Falla: <code>TypeError</code> en <code>utils.js</code></p></div>
+    <div class="step"><div class="k">Razonar</div><p>Leo el archivo y encuentro la causa.</p></div>
+    <div class="step"><div class="k">Actuar</div><p>Edita <code>utils.js</code> · <code>npm test</code></p></div>
+    <div class="step ok"><div class="k">Observar</div><p>Todos los tests pasan → fin del ciclo.</p></div>
+  </div>
+  <img class="cognition" src="assets/cognition.png" alt="Cognition">
+</section>
+
+<!-- ============ 3b. SUB-AGENTES ============ -->
+<section class="slide tight">
+  <img class="logo" src="assets/devin.png" alt="Devin">
+  <div class="label">Sección 01 · Agentic Loop</div>
+  <h1>Sub-agentes dentro del loop</h1>
+  <p class="sub">En la fase <b style="color:#fff">Actuar</b>, una herramienta más puede ser «lanzar otro agente».</p>
+
+  <div class="orch">
+    <div class="card main">
+      <h3>Orquestador</h3>
+      <ul>
+        <li>Recibe la misión y la divide en sub-tareas.</li>
+        <li>Delega, espera resultados y decide el próximo paso.</li>
+        <li>Nunca hace el trabajo fino: coordina.</li>
+      </ul>
+    </div>
+    <div class="arrow">→</div>
+    <div class="subs">
+      <div class="card"><h3>Sub-agente: Implementar</h3><p>Escribe el código en su propio contexto limpio.</p></div>
+      <div class="card"><h3>Sub-agente: Testear</h3><p>Corre los tests y devuelve solo el veredicto y los logs.</p></div>
+      <div class="card"><h3>Sub-agente: Revisar</h3><p>Lee el diff con ojos frescos y reporta problemas.</p></div>
+    </div>
+  </div>
+  <p class="takeaway"><b>Ventaja:</b> cada sub-agente tiene contexto limpio y una sola responsabilidad; el orquestador conserva la visión global.</p>
+  <img class="cognition" src="assets/cognition.png" alt="Cognition">
+</section>
+
+<!-- ============ 3c. LOOP GUIADO POR EVALS ============ -->
+<section class="slide tight">
+  <img class="logo" src="assets/devin.png" alt="Devin">
+  <div class="label">Sección 01 · Agentic Loop</div>
+  <h1>Loop autónomo guiado por evals</h1>
+  <p class="sub">Le das una misión y un criterio medible. El agente itera solo hasta cumplirlo.</p>
+
+  <div class="evalflow">
+    <div class="card"><span class="num">01</span><h3>Misión</h3><p>«Lograr 100% de tests verdes y cobertura ≥ 80%».</p></div>
+    <div class="arrow">→</div>
+    <div class="card"><span class="num">02</span><h3>Ejecutar</h3><p>El orquestador reparte el trabajo a sub-agentes.</p></div>
+    <div class="arrow">→</div>
+    <div class="card gate"><span class="num">03</span><h3>Evaluar</h3><p>Tests + evals corren automáticamente y dan un veredicto.</p></div>
+    <div class="arrow">→</div>
+    <div class="card"><span class="num">04</span><h3>¿Pasa?</h3><p>El veredicto decide si termina o vuelve a 02.</p></div>
+  </div>
+  <div class="verdict">
+    <div class="card"><b>PASS</b> → entrega el resultado y termina.</div>
+    <div class="card"><b>FAIL</b> → el reporte del eval vuelve como contexto y el loop repite (hasta N intentos).</div>
+  </div>
+  <p class="takeaway"><b>Clave:</b> el eval reemplaza al humano como juez. Si no es medible, no hay loop autónomo.</p>
+  <img class="cognition" src="assets/cognition.png" alt="Cognition">
+</section>
+
+<!-- ============ 3d. CÓMO CREARLO ============ -->
+<section class="slide tight">
+  <img class="logo" src="assets/devin.png" alt="Devin">
+  <div class="label">Sección 01 · Agentic Loop</div>
+  <h1 style="margin-top:17%">Cómo crearlo</h1>
+  <p class="sub" style="margin-top:.4em">Cuatro ingredientes y un bucle. El resto es prompting.</p>
+
+  <div class="recipe">
+    <div class="card">
+      <h3>Receta mínima</h3>
+      <ol>
+        <li><b>Misión clara</b>: qué hay que lograr, no cómo.</li>
+        <li><b>Eval ejecutable</b>: un script que devuelve PASS/FAIL y un reporte (tests, lint, benchmark, LLM-judge).</li>
+        <li><b>Herramientas</b>: shell, editor, y <code>spawn_subagent(tarea)</code>.</li>
+        <li><b>Límites</b>: N intentos máximo, presupuesto de tokens y acciones prohibidas.</li>
+      </ol>
+    </div>
+<pre><span class="cm"># pseudocódigo del orquestador</span>
+mision = "tests verdes + cobertura ≥ 80%"
+<span class="kw">for</span> intento <span class="kw">in</span> range(N):
+    plan  = llm.planificar(mision, historial)
+    <span class="kw">for</span> tarea <span class="kw">in</span> plan:
+        historial += spawn_subagent(tarea)
+    veredicto = eval.correr()      <span class="cm"># PASS / FAIL + reporte</span>
+    <span class="kw">if</span> veredicto.pass: <span class="kw">return</span> entregar()
+    historial += veredicto.reporte  <span class="cm"># aprende del fallo</span>
+escalar_a_humano(historial)        <span class="cm"># único HITL: agotó intentos</span></pre>
+  </div>
+  <img class="cognition" src="assets/cognition.png" alt="Cognition">
+</section>
+
+<!-- ============ 4. HITL QUÉ ES ============ -->
+<section class="slide">
+  <img class="logo" src="assets/devin.png" alt="Devin">
+  <div class="label">Sección 02 · Human in the Loop</div>
+  <h1>Human in the Loop (HITL)</h1>
+  <p class="sub">El agente se detiene en puntos clave y le pide algo a una persona.</p>
+
+  <div class="grid g3">
+    <div class="card"><h3>Aprobar</h3><ul><li>Antes de una acción irreversible o costosa.</li><li>Borrar datos, pagar, hacer deploy.</li></ul></div>
+    <div class="card"><h3>Aclarar</h3><ul><li>Cuando el pedido es ambiguo.</li><li>«¿Qué base de datos uso?»</li></ul></div>
+    <div class="card"><h3>Revisar</h3><ul><li>Cuando el resultado necesita criterio humano.</li><li>Un PR, un diagnóstico, una decisión legal.</li></ul></div>
+  </div>
+  <p class="takeaway"><b>Por qué:</b> confianza, seguridad y responsabilidad. El humano sigue siendo quien decide.</p>
+  <img class="cognition" src="assets/cognition.png" alt="Cognition">
+</section>
+
+<!-- ============ 5. DÓNDE ENTRA ============ -->
+<section class="slide">
+  <img class="logo" src="assets/devin.png" alt="Devin">
+  <div class="label">Sección 02 · Human in the Loop</div>
+  <h1>¿Dónde entra el humano?</h1>
+  <p class="sub">Tres momentos del loop donde el agente puede frenar y preguntar.</p>
+
+  <div class="rows">
+    <div class="row"><h3>Antes de actuar</h3><p><q>¿Confirmás que envíe el email a 500 clientes?</q></p><div class="tag">Aprobación previa</div></div>
+    <div class="row"><h3>Durante</h3><p>El agente se traba y pregunta: <q>¿Prefieres Postgres o SQLite para esta demo?</q></p><div class="tag">Aclaración</div></div>
+    <div class="row"><h3>Después</h3><p>Una persona revisa el Pull Request antes del merge.</p><div class="tag">Revisión final</div></div>
+  </div>
+  <img class="cognition" src="assets/cognition.png" alt="Cognition">
+</section>
+
+<!-- ============ 6. EJEMPLOS ============ -->
+<section class="slide tight">
+  <img class="logo" src="assets/devin.png" alt="Devin">
+  <div class="label">Sección 02 · Human in the Loop</div>
+  <h1>Ejemplos reales</h1>
+  <p class="sub">Cuanto más irreversible o riesgosa la acción, más cerca debe estar el humano.</p>
+
+  <div class="grid g2">
+    <div class="card"><h3>Devin y agentes de código</h3><ul><li>Piden permiso antes de comandos peligrosos o de hacer push.</li><li>El desarrollador revisa y aprueba el PR.</li></ul></div>
+    <div class="card"><h3>Atención al cliente</h3><ul><li>El bot resuelve lo simple.</li><li>Escala a un humano ante reembolsos o frustración.</li></ul></div>
+    <div class="card"><h3>Moderación de contenido</h3><ul><li>La IA clasifica en masa.</li><li>Los casos de baja confianza van a revisión humana.</li></ul></div>
+    <div class="card"><h3>Salud y finanzas</h3><ul><li>La IA sugiere un diagnóstico o una operación.</li><li>Un profesional aprueba antes de ejecutar.</li></ul></div>
+  </div>
+  <img class="cognition" src="assets/cognition.png" alt="Cognition">
+</section>
+
+</body>
+</html>
